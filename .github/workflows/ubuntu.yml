@@ -1,4 +1,4 @@
-name: Proxy via Tinyproxy
+name: Proxy
 
 on: [push, workflow_dispatch]
 
