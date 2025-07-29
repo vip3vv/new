@@ -1,36 +1,27 @@
-name: Ubuntu
+name: Proxy via Tinyproxy
 
 on: [push, workflow_dispatch]
 
 jobs:
-  connect:
+  proxy:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Update & install openssh-server
+    - name: Cài tinyproxy
       run: |
         sudo apt update
-        sudo apt install -y openssh-server
-        sudo systemctl enable ssh
-        sudo systemctl start ssh
-        sudo ufw allow ssh || true
-
-    - name: Set root password
-      run: echo -e "Mienphi99\nMienphi99" | sudo passwd root
-
-    - name: Permit root login
-      run: |
-        sudo sed -i 's/^#*PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config
-        sudo sed -i 's/^#*PasswordAuthentication.*/PasswordAuthentication yes/' /etc/ssh/sshd_config
-        sudo systemctl restart ssh
+        sudo apt install -y tinyproxy
+        sudo sed -i 's/^#Allow 127.0.0.1/Allow 0.0.0.0/' /etc/tinyproxy/tinyproxy.conf
+        sudo systemctl restart tinyproxy
+        sudo systemctl status tinyproxy || true
 
     - name: Download Ngrok
       run: |
         wget https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-linux-amd64.tgz
         tar -xvzf ngrok-v3-stable-linux-amd64.tgz
 
-    - name: Authenticate Ngrok
+    - name: Login Ngrok
       run: ./ngrok authtoken ${{ secrets.NGROK_AUTH_TOKEN }}
 
-    - name: Start Ngrok tunnel for SSH (port 22)
-      run: ./ngrok tcp 22 --region=ap
+    - name: Mở tunnel đến cổng 8888
+      run: ./ngrok tcp 8888 --region=ap
